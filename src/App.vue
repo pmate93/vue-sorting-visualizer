@@ -18,17 +18,18 @@
 <script>
 import Header from './components/Header.vue';
 import NumsArray from './components/NumsArray.vue';
-
 export default {
   name: 'App',
   components: {
     Header,
     NumsArray
   },
-
   data(){
     return{
-      numsArray: [],
+      numsArray: [
+        {number: 0},
+        {id: 0}
+      ],
       value_i: 0,
       value_j: 0,
       value_largest: 0,
@@ -42,7 +43,11 @@ export default {
       valuesToSwap: [
         {first: 0},
         {second: 0},
-        {swap: false}
+        {i: 0},
+        {j: 0},
+        {swap: false},
+        {first_id: 0},
+        {second_id: 0}
       ],
       valuesToSwapQuick:[
         {i: 0},
@@ -57,9 +62,9 @@ export default {
         {swap: false}
       ],
       finalArray: [],
+      next: false
     }
   },
-
   methods: {
     generateArray(range){
       this.done = false;
@@ -69,42 +74,32 @@ export default {
       this.value_j = -1;
       this.value_largest = -1;
       
+      let id = 0; 
       while(this.numsArray.length < range){
-        let duplicate = false;
         let num = Math.floor(Math.random() * 100) + 1;
-        for(let i = 0; i < this.numsArray.length;i++){
-          if(this.numsArray[i]===num){
-            duplicate = true;
-            break;
-          }
-        }
-
-        if(!duplicate){
-          this.numsArray.push(num);
-        }
+        this.numsArray.push({
+          number: num,
+          id: id
+        });
+        id++;
       }
     },
-
     async sort(type){
       this.sortType = type;
       this.done = false;
       this.disabled = true;
-
       const sleep = (time) => {
         return new Promise((resolve) => setTimeout(resolve, time))
       }
-
       let time = (180 / this.numsArray.length) * 10;
       this.counter = this.numsArray.length;
-
       if(type === 'Bubble Sort'){
-
         for(let i = 0; i < this.numsArray.length; i++){
           for(let j = 0; j < (this.numsArray.length - i - 1); j++){
             await sleep(time);
             this.value_j = j;
             this.value_i = j + 1;
-            if(this.numsArray[j] > this.numsArray[j+1]){
+            if(this.numsArray[j].number > this.numsArray[j+1].number){
               await sleep(time);
               this.turnRed = true;
               await sleep(time);
@@ -125,50 +120,70 @@ export default {
                 this.disabled = false;
               }, 500)
             },50);
-      }else if(type ==='Merge Sort'){
-
+      }else if(type === 'Merge Sort'){
         let tomb = [...this.numsArray];
         let previousArrays = [];
         this.valuesToSwap = [];
+
         this.mergeSort(tomb, 0, tomb.length-1, previousArrays);
         previousArrays.reverse();
         this.valuesToSwap.reverse();
 
         const printDelayed = () =>{
-          let time = (80 / tomb.length) * 10;
+          let time = (80 / tomb.length) * 30;
           this.turnRed = false;
+            
           if(previousArrays.length != 0){
             let pair = this.valuesToSwap.pop();
-
-            if(pair.first !== pair.second){
-              this.value_i = pair.first;
-              this.value_j = pair.second;
-
+            if(pair.first_id !== pair.second_id){
+              this.value_i = pair.first_id;
+              this.value_j = pair.second_id;
             }else{
               time = 0;
             }
-
             setTimeout(() =>{
               if(pair.swap === true){
                 this.turnRed = true;
               }
               setTimeout(() =>{
-                this.numsArray = previousArrays.pop();
+                previousArrays.pop();
                 if(pair.swap === true){
                   this.turnRed = true;
-                  this.numsArray = previousArrays[previousArrays.length -1];
-                  
+                  if(pair.i+1 === pair.j){
+                    let temp = this.numsArray[pair.i];
+                    this.numsArray[pair.i] = this.numsArray[pair.j];
+                    this.numsArray[pair.j] = temp;
+                  }else{
+                    let arrToHelp = new Array();
+                    while(this.numsArray[pair.i].number < this.numsArray[pair.j].number){
+                      pair.i = pair.i+1;
+                    }
+                    for (let i = pair.i; i < pair.j; i++) {
+                      arrToHelp.push(this.numsArray[i]); 
+                    }
+                    if(pair.i+1 === pair.j){
+                      let temp = this.numsArray[pair.i];
+                      this.numsArray[pair.i] = this.numsArray[pair.j];
+                      this.numsArray[pair.j] = temp;
+                    }else{
+                      this.numsArray[pair.i] = this.numsArray[pair.j];
+                      arrToHelp.reverse();
+                      for (let i = pair.i+1; i < pair.j+1; i++) {
+                        this.numsArray[i] = arrToHelp.pop();
+                      }
+                    }
+                  }  
                   setTimeout(() =>{
-                    setTimeout(printDelayed, time);
+                    setTimeout(() =>{
+                        this.turnRed = false;
+                        setTimeout(printDelayed, time);
+                    }, time)
                   }, time)
-                }else{
-
-                  setTimeout(printDelayed, time);
-                }
-                
-                
-              },time)
-          },time)
+                  }else{
+                    setTimeout(printDelayed, time);
+                  }
+                },time)
+            },time)
           }else{
             setTimeout(() =>{
               this.doneGreen = true;
@@ -179,33 +194,29 @@ export default {
               }, 500)
             },50);
           }
-          
         }
         printDelayed();
-      }else if(type ==='Quick Sort'){
+
+      }else if(type === 'Quick Sort'){
         this.counter = -1;
         this.valuesToSwapQuick = [];
-
 
         let tempArray = [...this.numsArray];
         this.finalArray = this.quickSort(tempArray, 0, tempArray.length-1);
         this.valuesToSwapQuick.reverse();
         this.finalArrayToCheck = [];
         this.pivot = this.valuesToSwapQuick[this.valuesToSwapQuick.length-1].pivot;
-
         const printDelayed = () =>{
           this.turnRed = false;
           if(this.valuesToSwapQuick.length!=0){
             let pair = this.valuesToSwapQuick.pop();
             this.value_i = pair.i;
             this.value_j = pair.j;
-
             if(this.pivot !== pair.pivot){
               this.counter++;
             }
             
             this.pivot = pair.pivot;
-
             if(pair.swap && (pair.i !== pair.j)){
               setTimeout(()=>{
                 this.turnRed = true;
@@ -232,16 +243,13 @@ export default {
                 this.disabled = false;
               }, 500)
             },50);
-          
           }
         }
         printDelayed();
 
-
-      }else if(type ==='Heap Sort'){
+      }else if(type === 'Heap Sort'){
         this.valuesToSwapHeap = [];
         let tempArray = [...this.numsArray];
-
         this.heapSort(tempArray);
         this.valuesToSwapHeap.reverse();
 
@@ -252,7 +260,6 @@ export default {
             this.value_i = pair.i;
             this.value_j = pair.j;
             this.value_largest = pair.largest;
-
             let temp;
             if(pair.swap && pair.largest !== -1){
               setTimeout(()=>{
@@ -267,7 +274,6 @@ export default {
                   }, time);
                 }, time)
               }, time)
-
             }else if(pair.swap && pair.largest === -1){
               setTimeout(()=>{
                 this.turnRed = true;
@@ -296,19 +302,16 @@ export default {
             },50);
           }
         }
-
         printDelayed();
       }
     },
 
     heapSort(arr){
       let n = arr.length;
-
       // Build heap (rearrange array)
       for (let i = Math.floor(n / 2) - 1; i >= 0; i--){
         this.heapify(arr, n, i);
       }
-
       // One by one extract an element from heap
       for (let i = n - 1; i > 0; i--) {
         this.valuesToSwapHeap.push({
@@ -321,7 +324,6 @@ export default {
         let temp = arr[0];
         arr[0] = arr[i];
         arr[i] = temp;
-
         // call max heapify on the reduced heap
         this.heapify(arr, i, 0);
       }
@@ -333,21 +335,17 @@ export default {
       let largest = i; // Initialize largest as root
       let l = 2 * i + 1; // left = 2*i + 1
       let r = 2 * i + 2; // right = 2*i + 2
-
       
-
       // If left child is larger than root
-      if (l < n && arr[l] > arr[largest]){
+      if (l < n && arr[l].number > arr[largest].number){
         largest = l;
         
       }
-
       // If right child is larger than largest so far
-      if (r < n && arr[r] > arr[largest]){
+      if (r < n && arr[r].number > arr[largest].number){
         largest = r;
         
       }
-
       // If largest is not root
       if (largest != i) {
         if(largest === r){
@@ -369,9 +367,7 @@ export default {
         arr[i] = arr[largest];
         arr[largest] = swap;
 
-        // Recursively heapify the affected sub-tree
         this.heapify(arr, n, largest);
-
       }else if(l <= n && r <= n){
         this.valuesToSwapHeap.push({
           i: i,
@@ -381,7 +377,6 @@ export default {
         })
       }
     },
-
     quickSort(arr, left, right) {
       let i;
       if (arr.length > 1) {
@@ -395,15 +390,13 @@ export default {
       }
       return arr;
     },
-
     partition(arr, left, right){
       let pivot = arr[Math.floor((left+right)/2)];
-
       let i = left; //left pointer
       let j = right; //right pointer (last element of array)
       
       while(i <= j){
-        while(arr[i]<pivot){
+        while(arr[i].number < pivot.number){
           this.valuesToSwapQuick.push({
             i: i,
             j: j,
@@ -412,8 +405,7 @@ export default {
           })
           i++;
         }
-
-        while(arr[j]>pivot){
+        while(arr[j].number > pivot.number){
           this.valuesToSwapQuick.push({
             i: i,
             j: j,
@@ -422,7 +414,6 @@ export default {
           })
           j--;
         }
-
         if(i <= j){
           this.valuesToSwapQuick.push({
             i: i,
@@ -440,72 +431,83 @@ export default {
       
       return i;
     },
-
     merge(arr, l, m, r, previousArrays) {
       let n1 = m - l + 1;
       let n2 = r - m;
-
       // Create temp arrays
       let L = new Array(n1);
       let R = new Array(n2);
-
       for (let i = 0; i < n1; i++){ 
         L[i] = arr[l + i];
       }
       for (let j = 0; j < n2; j++){
         R[j] = arr[m + 1 + j];
       };
-
       //index of first subarray
       let i = 0;
-
       //index of second subarray
       let j = 0;
-
       //index of merged subarray
       let k = l;
-
       while (i < n1 && j < n2) {
-        if (L[i] <= R[j]) {
+        if (L[i].number <= R[j].number) {
           this.valuesToSwap.push({
-            first: L[i],
-            second: R[j],
-            swap: false
+            first: L[i].number,
+            second: R[j].number,
+            i: i+l,
+            j: m + 1 + j,
+            swap: false,
+            first_id: L[i].id,
+            second_id: R[j].id, 
           })
+          
           arr[k] = L[i];
           i++;
         } else {
           this.valuesToSwap.push({
-            first: R[j],
-            second: L[i],
-            swap: true
+            first: R[j].number,
+            second: L[i].number,
+            i: i+l,
+            j: m + 1 + j,
+            swap: true,
+            first_id: R[j].id,
+            second_id: L[i].id,
           })
+          
           arr[k] = R[j];
           j++;
         }
         k++;
         previousArrays.push([...arr]);
       }
-
       while (i < n1) {
         this.valuesToSwap.push({
-          first: L[i],
-            second: arr[k],
-            swap: false
+            first: L[i].number,
+            second: arr[k].number,
+            i: i+l,
+            j: k,
+            swap: false,
+            first_id: L[i].id,
+            second_id: arr[k].id,
           })
+          
         arr[k] = L[i];
         i++;
         k++;
         previousArrays.push([...arr]);
       
       }
-
       while (j < n2) {
         this.valuesToSwap.push({
-            first: R[j],
-            second: arr[k],
-            swap: false
+            first: R[j].number,
+            second: arr[k].number,
+            i: k,
+            j: m + 1 + j,
+            swap: false,
+            first_id: R[j].id,
+            second_id: arr[k].id,
           })
+          
         arr[k] = R[j];
         j++;
         k++;
@@ -522,10 +524,7 @@ export default {
       this.mergeSort(arr, midIdx + 1, endIdx, previousArrays);
       this.merge(arr, startIdx, midIdx, endIdx, previousArrays);
     },
-
   },
-
-
   created(){
     this.generateArray(50);
   }
@@ -534,8 +533,6 @@ export default {
 </script>
 
 <style>
-
-
 body{
   margin: 0px;
   background-color: rgb(48, 46, 46);

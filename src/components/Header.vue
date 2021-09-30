@@ -49,7 +49,6 @@ export default {
 
 <style scoped>
 
-
 input{
   margin: 10px;
 }
