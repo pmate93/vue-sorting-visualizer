@@ -130,7 +130,7 @@ export default {
         this.valuesToSwap.reverse();
 
         const printDelayed = () =>{
-          let time = (80 / tomb.length) * 30;
+          let time = (80 / tomb.length) * 12;
           this.turnRed = false;
             
           if(previousArrays.length != 0){
