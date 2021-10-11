@@ -1,8 +1,6 @@
 # sorting-visualizer
 
-# Hosting
-
- https://pmate93.github.io/vue-sorting-visualizer/
+Hosting: https://pmate93.github.io/vue-sorting-visualizer/
 
 ## Project setup
 ```
