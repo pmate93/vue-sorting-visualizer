@@ -9,127 +9,159 @@
             }"
             :class="[active(index, number)]"
         >
-            {{ this.numsArray.length < 40 ? number.number : null }}
+            {{ numsArray.length < 40 ? number.number : null }}
         </div>
     </div>
 </template>
 
-<script>
-export default {
-    name: 'nums-array',
-    props: {
-        numsArray: Array,
-        value_i: Number,
-        value_j: Number,
-        value_largest: Number,
-        pivot: Number,
-        done: Boolean,
-        doneGreen: Boolean,
-        turnRed: Boolean,
-        counter: Number,
-        sortType: String,
-        finalArray: Array,
+<script setup lang="ts">
+import { Algorithms } from './constants';
+
+const props = defineProps({
+    numsArray: {
+        type: Array,
+        required: true,
     },
-    methods: {
-        active(index, number) {
-            if (this.sortType === 'Bubble Sort' || this.sortType === '') {
-                if (this.doneGreen) {
-                    return 'active';
-                }
-                if (this.done) {
-                    return 'purple';
-                }
-                if (this.counter <= index && this.counter >= 0) {
-                    return 'purple';
-                } else if (this.value_i === index || this.value_j === index) {
-                    if (this.turnRed) {
-                        return 'red';
-                    }
-                    return 'active';
-                } else {
-                    return 'element';
-                }
-            } else if (this.sortType === 'Merge Sort') {
-                if (this.doneGreen) {
-                    return 'active';
-                }
-                if (this.done) {
-                    return 'purple';
-                }
-                if (this.value_i === number.id || this.value_j === number.id) {
-                    if (this.turnRed) {
-                        return 'red';
-                    }
-                    return 'active';
-                } else {
-                    return 'element';
-                }
-            } else if (this.sortType === 'Quick Sort') {
-                if (this.doneGreen) {
-                    return 'active';
-                }
-                if (this.done) {
-                    return 'purple';
-                }
+    value_i: {
+        type: Number,
+        required: true,
+    },
+    value_j: {
+        type: Number,
+        required: true,
+    },
+    value_largest: {
+        type: Number,
+        required: true,
+    },
+    pivot: {
+        type: Number,
+        required: true,
+    },
+    done: {
+        type: Boolean,
+        required: true,
+    },
+    turnRed: {
+        type: Boolean,
+        required: true,
+    },
+    doneGreen: {
+        type: Boolean,
+        required: true,
+    },
+    counter: {
+        type: Number,
+        required: true,
+    },
+    sortType: {
+        type: String,
+        required: true,
+    },
+    finalArray: {
+        type: Array,
+        required: true,
+    },
+});
 
-                if (this.pivot === index) {
-                    if ((this.value_i === this.pivot || this.value_j === this.pivot) && this.turnRed) {
-                        return 'red';
-                    }
-                    if (this.value_i === this.pivot || this.value_j === this.pivot) {
-                        return 'active';
-                    }
-                    if (
-                        (this.turnRed && this.value_i === this.pivot) ||
-                        (this.turnRed && this.value_j === this.pivot)
-                    ) {
-                        return 'red';
-                    }
-                    return 'orange';
-                }
-
-                if (this.value_i === index || this.value_j === index) {
-                    if (this.turnRed) {
-                        return 'red';
-                    }
-                    return 'active';
-                } else {
-                    if (this.numsArray[index] === this.finalArray[index] && this.counter >= 0) {
-                        return 'purple';
-                    }
-                    return 'element';
-                }
-            } else if (this.sortType === 'Heap Sort') {
-                if (this.doneGreen) {
-                    return 'active';
-                }
-                if (this.done) {
-                    return 'purple';
-                }
-                if (this.counter <= index && this.counter >= 0) {
-                    return 'purple';
-                }
-
-                if (this.value_i === index || this.value_j === index || this.value_largest === index) {
-                    if (this.turnRed && this.value_largest !== -1) {
-                        if (this.value_largest === index || this.value_i === index) {
-                            return 'red';
-                        }
-                        return 'active';
-                    } else if (this.turnRed && this.value_largest === -1) {
-                        if (this.value_j === index || this.value_i === index) {
-                            return 'red';
-                        }
-                        return 'active';
-                    }
-                    return 'active';
-                } else {
-                    return 'element';
-                }
+function active(index: number, number: any): string {
+    if (props.sortType === Algorithms.BubbleSort || props.sortType === '') {
+        if (props.doneGreen) {
+            return 'active';
+        }
+        if (props.done) {
+            return 'purple';
+        }
+        if (props.counter <= index && props.counter >= 0) {
+            return 'purple';
+        } else if (props.value_i === index || props.value_j === index) {
+            if (props.turnRed) {
+                return 'red';
             }
-        },
-    },
-};
+            return 'active';
+        } else {
+            return 'element';
+        }
+    } else if (props.sortType === 'Merge Sort') {
+        if (props.doneGreen) {
+            return 'active';
+        }
+        if (props.done) {
+            return 'purple';
+        }
+        if (props.value_i === number.id || props.value_j === number.id) {
+            if (props.turnRed) {
+                return 'red';
+            }
+            return 'active';
+        } else {
+            return 'element';
+        }
+    } else if (props.sortType === 'Quick Sort') {
+        if (props.doneGreen) {
+            return 'active';
+        }
+        if (props.done) {
+            return 'purple';
+        }
+
+        if (props.pivot === index) {
+            if ((props.value_i === props.pivot || props.value_j === props.pivot) && props.turnRed) {
+                return 'red';
+            }
+            if (props.value_i === props.pivot || props.value_j === props.pivot) {
+                return 'active';
+            }
+            if (
+                (props.turnRed && props.value_i === props.pivot) ||
+                (props.turnRed && props.value_j === props.pivot)
+            ) {
+                return 'red';
+            }
+            return 'orange';
+        }
+
+        if (props.value_i === index || props.value_j === index) {
+            if (props.turnRed) {
+                return 'red';
+            }
+            return 'active';
+        } else {
+            if (props.numsArray[index] === props.finalArray[index] && props.counter >= 0) {
+                return 'purple';
+            }
+            return 'element';
+        }
+    } else if (props.sortType === 'Heap Sort') {
+        if (props.doneGreen) {
+            return 'active';
+        }
+        if (props.done) {
+            return 'purple';
+        }
+        if (props.counter <= index && props.counter >= 0) {
+            return 'purple';
+        }
+
+        if (props.value_i === index || props.value_j === index || props.value_largest === index) {
+            if (props.turnRed && props.value_largest !== -1) {
+                if (props.value_largest === index || props.value_i === index) {
+                    return 'red';
+                }
+                return 'active';
+            } else if (props.turnRed && props.value_largest === -1) {
+                if (props.value_j === index || props.value_i === index) {
+                    return 'red';
+                }
+                return 'active';
+            }
+            return 'active';
+        } else {
+            return 'element';
+        }
+    }
+    return '';
+}
 </script>
 
 <style scoped>
